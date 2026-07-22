@@ -128,15 +128,33 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+Running `python -m src.main` produces:
 
-```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+```text
+Loaded songs: 18
+
+User profile: happy, energetic pop
+Top 5 recommendations:
+
+1. Sunrise City — Neon Echo
+   Score: 7.92/8.00
+   Reasons: genre match (+2.00); mood match (+1.00); energy similarity (+1.96); valence similarity (+0.99); danceability similarity (+0.99); acousticness similarity (+0.98)
+
+2. Gym Hero — Max Pulse
+   Score: 6.43/8.00
+   Reasons: genre match (+2.00); mood differs (+0.00); energy similarity (+1.74); valence similarity (+0.92); danceability similarity (+0.92); acousticness similarity (+0.85)
+
+3. Rooftop Lights — Indigo Parade
+   Score: 5.71/8.00
+   Reasons: genre differs (+0.00); mood match (+1.00); energy similarity (+1.92); valence similarity (+0.96); danceability similarity (+0.98); acousticness similarity (+0.85)
+
+4. Carnival Sky — Sol Mercado
+   Score: 4.61/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.82); valence similarity (+0.94); danceability similarity (+0.87); acousticness similarity (+0.98)
+
+5. Concrete Crown — North Cipher
+   Score: 4.55/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.88); valence similarity (+0.83); danceability similarity (+0.96); acousticness similarity (+0.88)
 ```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
@@ -177,4 +195,3 @@ Write 1 to 2 paragraphs here about what you learned:
 
 - about how recommenders turn data into predictions
 - about where bias or unfairness could show up in systems like this
-
