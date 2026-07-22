@@ -2,16 +2,11 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
-
-Your goal is to:
-
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
-
-Replace this paragraph with your own summary of what your version does.
+This project is a CLI-first, content-based music recommender simulation. It
+loads an 18-song catalog from CSV, compares every song with a listener's taste
+profile, and prints a ranked Top 5 with a score and plain-language reasons for
+each result. Its weighted rules make the transformation from song data to a
+recommendation visible instead of hiding it inside a black box.
 
 ---
 
@@ -65,6 +60,10 @@ numerical features because it strongly affects whether a track feels intense
 or relaxed. After every song is scored, the recommender sorts songs from the
 highest score to the lowest. If two songs have the same score, the song with
 the lower ID comes first. It then returns the top `k` songs.
+
+The implementation uses `sorted()` because it produces a new ranked list and
+leaves the original song catalog unchanged. In contrast, a list's `.sort()`
+method changes that list in place and returns `None`.
 
 ### Data Flow
 
