@@ -70,7 +70,7 @@ separate weight experiment, reducing genre and increasing energy moved
 Finally, I tested diversity reranking. Without a repeat-artist penalty, two
 LoRoom songs appeared together near the top of the lofi list. With diversity
 enabled, `Library Rain` moved ahead of the second LoRoom song while all results
-remained relevant. Eight automated tests verify data conversion, scoring,
+remained relevant. Nine automated tests verify data conversion, scoring,
 ranking, modes, explanations, and diversity behavior.
 
 ---
