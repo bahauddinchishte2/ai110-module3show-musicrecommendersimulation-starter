@@ -139,3 +139,28 @@ def test_recommend_songs_ranks_without_mutating_catalog():
     assert results[0][1] == pytest.approx(8.0)
     assert "genre match" in results[0][2]
     assert songs == original_order
+
+
+def test_score_song_accepts_experimental_weights():
+    song = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 0.8,
+        "valence": 0.9,
+        "danceability": 0.8,
+        "acousticness": 0.2,
+    }
+    weight_shift = {
+        "genre": 1.0,
+        "mood": 1.0,
+        "energy": 4.0,
+        "valence": 1.0,
+        "danceability": 1.0,
+        "acousticness": 1.0,
+    }
+
+    score, reasons = score_song(PERFECT_PROFILE, song, weight_shift)
+
+    assert score == pytest.approx(9.0)
+    assert "genre match (+1.00)" in reasons
+    assert "energy similarity (+4.00)" in reasons

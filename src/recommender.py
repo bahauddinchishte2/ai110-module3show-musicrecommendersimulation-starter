@@ -11,6 +11,15 @@ NUMERIC_SONG_FIELDS = (
     "acousticness",
 )
 
+DEFAULT_SCORING_WEIGHTS = {
+    "genre": 2.0,
+    "mood": 1.0,
+    "energy": 2.0,
+    "valence": 1.0,
+    "danceability": 1.0,
+    "acousticness": 1.0,
+}
+
 
 @dataclass
 class Song:
@@ -101,16 +110,19 @@ def _similarity(value: float, target: float) -> float:
     return max(0.0, 1.0 - abs(value - target))
 
 
-def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
+def score_song(
+    user_prefs: Dict, song: Dict, weights: Optional[Dict[str, float]] = None
+) -> Tuple[float, List[str]]:
     """Score one song and return its numeric score and explanation reasons."""
 
+    active_weights = DEFAULT_SCORING_WEIGHTS if weights is None else weights
     score = 0.0
     reasons = []
 
     genre_matches = song["genre"].strip().casefold() == user_prefs[
         "favorite_genre"
     ].strip().casefold()
-    genre_points = 2.0 if genre_matches else 0.0
+    genre_points = active_weights["genre"] if genre_matches else 0.0
     score += genre_points
     reasons.append(
         f"genre {'match' if genre_matches else 'differs'} (+{genre_points:.2f})"
@@ -119,17 +131,17 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     mood_matches = song["mood"].strip().casefold() == user_prefs[
         "favorite_mood"
     ].strip().casefold()
-    mood_points = 1.0 if mood_matches else 0.0
+    mood_points = active_weights["mood"] if mood_matches else 0.0
     score += mood_points
     reasons.append(
         f"mood {'match' if mood_matches else 'differs'} (+{mood_points:.2f})"
     )
 
     numerical_rules = (
-        ("energy", "target_energy", 2.0),
-        ("valence", "target_valence", 1.0),
-        ("danceability", "target_danceability", 1.0),
-        ("acousticness", "target_acousticness", 1.0),
+        ("energy", "target_energy", active_weights["energy"]),
+        ("valence", "target_valence", active_weights["valence"]),
+        ("danceability", "target_danceability", active_weights["danceability"]),
+        ("acousticness", "target_acousticness", active_weights["acousticness"]),
     )
     for song_field, preference_field, weight in numerical_rules:
         points = weight * _similarity(
@@ -142,13 +154,16 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
 
 def recommend_songs(
-    user_prefs: Dict, songs: List[Dict], k: int = 5
+    user_prefs: Dict,
+    songs: List[Dict],
+    k: int = 5,
+    weights: Optional[Dict[str, float]] = None,
 ) -> List[Tuple[Dict, float, str]]:
     """Score all songs and return the highest-ranked k with explanations."""
 
     scored_songs = []
     for song in songs:
-        score, reasons = score_song(user_prefs, song)
+        score, reasons = score_song(user_prefs, song, weights)
         scored_songs.append((song, score, "; ".join(reasons)))
 
     return sorted(

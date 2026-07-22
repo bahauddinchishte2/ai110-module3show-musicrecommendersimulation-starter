@@ -61,29 +61,53 @@ Prompts:
 
 ## 6. Limitations and Bias 
 
-Where the system struggles or behaves unfairly. 
-
-Prompts:  
-
-- Features it does not consider  
-- Genres or moods that are underrepresented  
-- Cases where the system overfits to one preference  
-- Ways the scoring might unintentionally favor some users  
+The 18-song catalog is too small to represent the variety inside each genre,
+and several genres have only one song. Exact genre and mood labels can therefore
+create a filter bubble by repeatedly rewarding the only labeled match. The edge
+case showed that `Empty Station` could rank first for a high-energy listener even
+though its energy is only 0.45, because it was the catalog's only blues song.
+The model also ignores lyrics, listening history, context, and diversity, so its
+scores should not be treated as proof that a listener will enjoy a song.
 
 ---
 
 ## 7. Evaluation  
 
-How you checked whether the recommender behaved as expected. 
+I ran four profiles: Happy Energetic Pop, Chill Focused Lofi, Deep Intense Rock,
+and a conflicting Happy Blues edge case. The first three felt reasonable:
+`Sunrise City`, `Focus Flow`, and `Storm Runner` ranked first because each nearly
+matched its profile across both labels and numerical features. `Gym Hero` also
+appeared for both pop and rock listeners: it earns the pop genre bonus in one
+case and the intense mood bonus plus high-energy similarity in the other.
 
-Prompts:  
+The edge case requested happy blues with very high energy but low valence,
+low danceability, and high acousticness. `Empty Station` ranked first even with
+a large energy gap because it received the catalog's only blues genre bonus.
+That result is explainable, but it does not fully match my musical intuition and
+shows how a sparse catalog can make one label too influential.
 
-- Which user profiles you tested  
-- What you looked for in the recommendations  
-- What surprised you  
-- Any simple tests or comparisons you ran  
+### Profile Comparisons
 
-No need for numeric metrics unless you created some.
+- Happy Pop vs. Chill Lofi: the pop list favors bright, electronic tracks,
+  while the lofi list shifts to low-energy, highly acoustic tracks.
+- Happy Pop vs. Intense Rock: both include `Gym Hero`, but pop rewards its genre
+  and rock rewards its intense mood and high energy.
+- Happy Pop vs. Happy Blues: the shared happy label helps pop songs in both,
+  but the blues bonus makes `Empty Station` win the edge-case list.
+- Chill Lofi vs. Intense Rock: their top results are almost opposites in energy
+  and acousticness, which is exactly what those profiles were designed to test.
+- Chill Lofi vs. Happy Blues: both prefer acoustic sound, but the conflicting
+  profile's high-energy target pulls rock and pop songs into its lower ranks.
+- Intense Rock vs. Happy Blues: both request high energy, but rock favors
+  amplified low-acoustic tracks while the blues profile asks for high acousticness.
+
+### Weight-Shift Experiment
+
+For Happy Energetic Pop, I halved genre weight from 2.0 to 1.0 and doubled
+energy from 2.0 to 4.0. `Sunrise City` remained first, while `Rooftop Lights`
+moved from third to second and `Gym Hero` moved from second to third. This made
+the list more sensitive to energy closeness but less faithful to the explicit
+genre preference, so the result was different rather than universally better.
 
 ---
 

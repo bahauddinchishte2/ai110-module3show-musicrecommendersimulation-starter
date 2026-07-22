@@ -100,6 +100,7 @@ full variety within each genre, mood, culture, or listener's taste.
    python -m venv .venv
    source .venv/bin/activate      # Mac or Linux
    .venv\Scripts\activate         # Windows
+   ```
 
 2. Install dependencies
 
@@ -127,14 +128,12 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Running `python -m src.main` produces:
+Running `python -m src.main` evaluates four profiles. The following blocks are
+the observed Top 5 results for each profile.
+
+### Happy Energetic Pop
 
 ```text
-Loaded songs: 18
-
-User profile: happy, energetic pop
-Top 5 recommendations:
-
 1. Sunrise City — Neon Echo
    Score: 7.92/8.00
    Reasons: genre match (+2.00); mood match (+1.00); energy similarity (+1.96); valence similarity (+0.99); danceability similarity (+0.99); acousticness similarity (+0.98)
@@ -156,17 +155,95 @@ Top 5 recommendations:
    Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.88); valence similarity (+0.83); danceability similarity (+0.96); acousticness similarity (+0.88)
 ```
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
+### Chill Focused Lofi
+
+```text
+1. Focus Flow — LoRoom
+   Score: 7.97/8.00
+   Reasons: genre match (+2.00); mood match (+1.00); energy similarity (+2.00); valence similarity (+0.99); danceability similarity (+1.00); acousticness similarity (+0.98)
+
+2. Midnight Coding — LoRoom
+   Score: 6.83/8.00
+   Reasons: genre match (+2.00); mood differs (+0.00); energy similarity (+1.96); valence similarity (+0.98); danceability similarity (+0.98); acousticness similarity (+0.91)
+
+3. Library Rain — Paper Lanterns
+   Score: 6.80/8.00
+   Reasons: genre match (+2.00); mood differs (+0.00); energy similarity (+1.90); valence similarity (+0.98); danceability similarity (+0.98); acousticness similarity (+0.94)
+
+4. River Memory — Cedar Thread
+   Score: 4.80/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.98); valence similarity (+0.99); danceability similarity (+0.90); acousticness similarity (+0.93)
+
+5. Coffee Shop Stories — Slow Stereo
+   Score: 4.66/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.94); valence similarity (+0.87); danceability similarity (+0.94); acousticness similarity (+0.91)
+```
+
+### Deep Intense Rock
+
+```text
+1. Storm Runner — Voltline
+   Score: 7.94/8.00
+   Reasons: genre match (+2.00); mood match (+1.00); energy similarity (+1.98); valence similarity (+0.97); danceability similarity (+0.99); acousticness similarity (+1.00)
+
+2. Gym Hero — Max Pulse
+   Score: 5.38/8.00
+   Reasons: genre differs (+0.00); mood match (+1.00); energy similarity (+1.98); valence similarity (+0.68); danceability similarity (+0.77); acousticness similarity (+0.95)
+
+3. Concrete Crown — North Cipher
+   Score: 4.44/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.88); valence similarity (+0.77); danceability similarity (+0.81); acousticness similarity (+0.98)
+
+4. Night Drive Loop — Neon Echo
+   Score: 4.42/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.66); valence similarity (+0.96); danceability similarity (+0.92); acousticness similarity (+0.88)
+
+5. Electric Bloom — Pulse Arcade
+   Score: 4.23/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.96); valence similarity (+0.57); danceability similarity (+0.74); acousticness similarity (+0.96)
+```
+
+### Conflicting Happy Blues (Edge Case)
+
+```text
+1. Empty Station — Blue Hour
+   Score: 5.55/8.00
+   Reasons: genre match (+2.00); mood differs (+0.00); energy similarity (+1.00); valence similarity (+0.92); danceability similarity (+0.72); acousticness similarity (+0.91)
+
+2. Rooftop Lights — Indigo Parade
+   Score: 3.84/8.00
+   Reasons: genre differs (+0.00); mood match (+1.00); energy similarity (+1.62); valence similarity (+0.39); danceability similarity (+0.38); acousticness similarity (+0.45)
+
+3. Sunrise City — Neon Echo
+   Score: 3.79/8.00
+   Reasons: genre differs (+0.00); mood match (+1.00); energy similarity (+1.74); valence similarity (+0.36); danceability similarity (+0.41); acousticness similarity (+0.28)
+
+4. Storm Runner — Voltline
+   Score: 3.38/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.92); valence similarity (+0.72); danceability similarity (+0.54); acousticness similarity (+0.20)
+
+5. Dust and Gold — Canyon Lines
+   Score: 3.30/8.00
+   Reasons: genre differs (+0.00); mood differs (+0.00); energy similarity (+1.26); valence similarity (+0.57); danceability similarity (+0.61); acousticness similarity (+0.86)
+```
 
 ---
 
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+I tested a weight shift on the Happy Energetic Pop profile. The default formula
+uses genre weight `2.0` and energy weight `2.0`. The experiment halved genre to
+`1.0` and doubled energy to `4.0`, raising the experimental maximum to `9.0`.
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+```text
+Baseline:     Sunrise City, Gym Hero, Rooftop Lights, Carnival Sky, Concrete Crown
+Weight shift: Sunrise City, Rooftop Lights, Gym Hero, Concrete Crown, Carnival Sky
+```
+
+`Sunrise City` stayed first, but `Rooftop Lights` moved above `Gym Hero` because
+its energy is closer to the target and genre now matters less. The result was
+not objectively more accurate; it was more focused on numerical vibe and less
+focused on the user's explicit pop preference.
 
 ---
 
