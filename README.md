@@ -17,17 +17,77 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Explain your design in plain language.
+This simulation uses **content-based filtering**. It compares the attributes of
+each song with a user's stated preferences instead of relying on other users'
+listening histories. Each song has identity fields (`id`, `title`, and `artist`),
+categorical features (`genre` and `mood`), and numerical features
+(`energy`, `tempo_bpm`, `valence`, `danceability`, and `acousticness`). The
+initial 10-song catalog was expanded to 18 songs so the simulator represents a
+wider range of genres and moods.
 
-Some prompts to answer:
+### Target User Profile
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+The first user profile represents someone who prefers happy, energetic,
+danceable pop with a mostly electronic sound:
 
-You can include a simple diagram or bullet list if helpful.
+```python
+user_profile = {
+    "favorite_genre": "pop",
+    "favorite_mood": "happy",
+    "target_energy": 0.80,
+    "target_valence": 0.85,
+    "target_danceability": 0.80,
+    "target_acousticness": 0.20,
+}
+```
+
+This profile should clearly distinguish intense rock from chill lofi. An
+intense rock song may be close to the energy target, but it will not match the
+preferred genre or mood. Chill lofi will usually be farther from the energy,
+danceability, and acousticness targets. However, the profile is intentionally
+narrow: it may overlook dark but energetic pop or happy acoustic songs that the
+listener could still enjoy.
+
+### Algorithm Recipe
+
+Each song can earn a maximum score of **8.0 points**:
+
+- Exact genre match: `+2.0`
+- Exact mood match: `+1.0`
+- Energy similarity: `2 × (1 - |song energy - target energy|)`
+- Valence similarity: `1 × (1 - |song valence - target valence|)`
+- Danceability similarity: `1 × (1 - |song danceability - target danceability|)`
+- Acousticness similarity: `1 × (1 - |song acousticness - target acousticness|)`
+
+The similarity formulas reward closeness to the user's target rather than
+rewarding every high value. Energy receives twice the weight of the other
+numerical features because it strongly affects whether a track feels intense
+or relaxed. After every song is scored, the recommender sorts songs from the
+highest score to the lowest. If two songs have the same score, the song with
+the lower ID comes first. It then returns the top `k` songs.
+
+### Data Flow
+
+```text
+Input: user preferences
+        |
+        v
+Process: load the CSV and score every song with the algorithm recipe
+        |
+        v
+Ranking: sort by score (then by song ID for ties)
+        |
+        v
+Output: return the Top K recommendations
+```
+
+### Expected Biases
+
+Exact genre and mood matches depend on broad human-assigned labels, so two
+similar songs with different labels may be treated as unrelated. The similarity
+rules can also create a filter bubble by repeatedly favoring songs close to the
+same target vibe. Finally, this small synthetic catalog cannot represent the
+full variety within each genre, mood, culture, or listener's taste.
 
 ---
 
@@ -117,6 +177,4 @@ Write 1 to 2 paragraphs here about what you learned:
 
 - about how recommenders turn data into predictions
 - about where bias or unfairness could show up in systems like this
-
-
 
