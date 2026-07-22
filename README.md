@@ -16,9 +16,9 @@ This simulation uses **content-based filtering**. It compares the attributes of
 each song with a user's stated preferences instead of relying on other users'
 listening histories. Each song has identity fields (`id`, `title`, and `artist`),
 categorical features (`genre` and `mood`), and numerical features
-(`energy`, `tempo_bpm`, `valence`, `danceability`, and `acousticness`). The
-initial 10-song catalog was expanded to 18 songs so the simulator represents a
-wider range of genres and moods.
+(`energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness`, `popularity`,
+`release_decade`, `instrumentalness`, `speechiness`, and `liveness`). The initial
+10-song catalog was expanded to 18 songs and five advanced attributes.
 
 ### Target User Profile
 
@@ -33,6 +33,11 @@ user_profile = {
     "target_valence": 0.85,
     "target_danceability": 0.80,
     "target_acousticness": 0.20,
+    "target_popularity": 80,
+    "target_release_decade": 2020,
+    "target_instrumentalness": 0.05,
+    "target_speechiness": 0.06,
+    "target_liveness": 0.20,
 }
 ```
 
@@ -45,7 +50,7 @@ listener could still enjoy.
 
 ### Algorithm Recipe
 
-Each song can earn a maximum score of **8.0 points**:
+In balanced mode, each song can earn a maximum score of **10.5 points**:
 
 - Exact genre match: `+2.0`
 - Exact mood match: `+1.0`
@@ -53,6 +58,8 @@ Each song can earn a maximum score of **8.0 points**:
 - Valence similarity: `1 × (1 - |song valence - target valence|)`
 - Danceability similarity: `1 × (1 - |song danceability - target danceability|)`
 - Acousticness similarity: `1 × (1 - |song acousticness - target acousticness|)`
+- Popularity, release decade, instrumentalness, speechiness, and liveness
+  similarity: up to `+0.5` each
 
 The similarity formulas reward closeness to the user's target rather than
 rewarding every high value. Energy receives twice the weight of the other
@@ -60,6 +67,10 @@ numerical features because it strongly affects whether a track feels intense
 or relaxed. After every song is scored, the recommender sorts songs from the
 highest score to the lowest. If two songs have the same score, the song with
 the lower ID comes first. It then returns the top `k` songs.
+
+Three scoring strategies are available: `balanced`, `genre_first`, and
+`energy_focused`. Optional diversity reranking subtracts `0.75` for a repeated
+artist and `0.25` for a repeated genre at each ranking position.
 
 The implementation uses `sorted()` because it produces a new ranked list and
 leaves the original song catalog unchanged. In contrast, a list's `.sort()`
@@ -88,6 +99,14 @@ rules can also create a filter bubble by repeatedly favoring songs close to the
 same target vibe. Finally, this small synthetic catalog cannot represent the
 full variety within each genre, mood, culture, or listener's taste.
 
+### Optional Extensions
+
+- Five advanced song features deepen the content profile.
+- Named scoring strategies use a simple Strategy pattern instead of duplicating
+  the scoring algorithm.
+- Diversity reranking reduces repeated artists and genres.
+- A dependency-free ASCII table displays rank, title, artist, score, and reasons.
+
 ---
 
 ## Getting Started
@@ -114,6 +133,14 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
+Switch scoring strategies or disable diversity:
+
+```bash
+python -m src.main --mode genre_first
+python -m src.main --mode energy_focused
+python -m src.main --mode balanced --no-diversity
+```
+
 ### Running Tests
 
 Run the starter tests with:
@@ -128,8 +155,9 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Running `python -m src.main` evaluates four profiles. The following blocks are
-the observed Top 5 results for each profile.
+The following blocks preserve the Phase 4 baseline results before advanced
+features and diversity reranking were added. The current CLI renders the same
+four profiles as an ASCII table with a maximum balanced score of 10.5.
 
 ### Happy Energetic Pop
 
@@ -249,25 +277,18 @@ focused on the user's explicit pop preference.
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
-
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+The catalog is small and synthetic, exact labels can overpower other signals,
+and the system does not learn from real behavior. Diversity penalties are fixed
+rules and may demote songs a listener would enjoy. See the completed
+[Model Card](model_card.md) for the full evaluation.
 
 ---
 
 ## Reflection
 
-Read and complete `model_card.md`:
-
-[**Model Card**](model_card.md)
-
-Write 1 to 2 paragraphs here about what you learned:
-
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+This project showed me that recommendation quality depends as much on human
+choices about data and weights as it does on code. Simple scores can feel
+personal, but edge cases reveal filter bubbles and sparse-data bias. AI helped
+with brainstorming and implementation, while tests and manual review were
+necessary to catch math errors and confirm the results. The complete reflection
+is in the [Model Card](model_card.md).

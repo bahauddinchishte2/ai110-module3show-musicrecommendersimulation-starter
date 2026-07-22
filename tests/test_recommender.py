@@ -89,6 +89,9 @@ def test_load_songs_converts_numeric_fields():
     assert isinstance(songs[0]["id"], int)
     assert isinstance(songs[0]["energy"], float)
     assert isinstance(songs[0]["tempo_bpm"], float)
+    assert isinstance(songs[0]["popularity"], int)
+    assert isinstance(songs[0]["release_decade"], int)
+    assert isinstance(songs[0]["instrumentalness"], float)
 
 
 def test_score_song_applies_the_complete_recipe():
@@ -164,3 +167,90 @@ def test_score_song_accepts_experimental_weights():
     assert score == pytest.approx(9.0)
     assert "genre match (+1.00)" in reasons
     assert "energy similarity (+4.00)" in reasons
+
+
+def test_advanced_features_contribute_to_balanced_score():
+    profile = {
+        **PERFECT_PROFILE,
+        "target_popularity": 80,
+        "target_release_decade": 2020,
+        "target_instrumentalness": 0.1,
+        "target_speechiness": 0.05,
+        "target_liveness": 0.2,
+    }
+    song = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 0.8,
+        "valence": 0.9,
+        "danceability": 0.8,
+        "acousticness": 0.2,
+        "popularity": 80,
+        "release_decade": 2020,
+        "instrumentalness": 0.1,
+        "speechiness": 0.05,
+        "liveness": 0.2,
+    }
+
+    score, reasons = score_song(profile, song)
+
+    assert score == pytest.approx(10.5)
+    assert len(reasons) == 11
+    assert "popularity similarity (+0.50)" in reasons
+
+
+def test_scoring_modes_change_ranking_priorities():
+    profile = {**PERFECT_PROFILE, "target_energy": 1.0}
+    genre_match = {
+        "id": 1,
+        "title": "Genre Match",
+        "artist": "Artist A",
+        "genre": "pop",
+        "mood": "other",
+        "energy": 0.0,
+        "valence": 0.9,
+        "danceability": 0.8,
+        "acousticness": 0.2,
+    }
+    energy_match = {
+        **genre_match,
+        "id": 2,
+        "title": "Energy Match",
+        "artist": "Artist B",
+        "genre": "rock",
+        "energy": 1.0,
+    }
+
+    genre_results = recommend_songs(
+        profile, [genre_match, energy_match], mode="genre_first"
+    )
+    energy_results = recommend_songs(
+        profile, [genre_match, energy_match], mode="energy_focused"
+    )
+
+    assert genre_results[0][0]["title"] == "Genre Match"
+    assert energy_results[0][0]["title"] == "Energy Match"
+
+
+def test_diversity_penalty_avoids_repeating_artist_when_scores_tie():
+    songs = []
+    for song_id, artist in ((1, "Repeated Artist"), (2, "Repeated Artist"), (3, "New Artist")):
+        songs.append(
+            {
+                "id": song_id,
+                "title": f"Song {song_id}",
+                "artist": artist,
+                "genre": "pop",
+                "mood": "happy",
+                "energy": 0.8,
+                "valence": 0.9,
+                "danceability": 0.8,
+                "acousticness": 0.2,
+            }
+        )
+
+    results = recommend_songs(PERFECT_PROFILE, songs, k=2, apply_diversity=True)
+
+    assert results[0][0]["artist"] == "Repeated Artist"
+    assert results[1][0]["artist"] == "New Artist"
+    assert "repeat genre penalty" in results[1][2]

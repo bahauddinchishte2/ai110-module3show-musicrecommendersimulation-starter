@@ -1,43 +1,48 @@
 # AI Interactions Log
 
-> **Stretch features only.** Only fill in the sections that apply to stretch features you attempted. If you did not attempt a stretch feature, leave its section blank or delete it. This file is not required for the core project.
-
----
-
 ## Agentic Workflow (SF8)
-
-> Document your experience using an AI agent (e.g., Cursor Agent, Claude, Copilot) to make multi-step changes autonomously.
 
 **What task did you give the agent?**
 
-<!-- Describe the goal you asked the agent to accomplish -->
+I asked the agent to complete the model card and all optional recommender
+extensions while preserving the working CLI and tests.
 
 **Prompts used:**
 
-<!-- Paste the key prompts you gave the agent -->
+- "Add five advanced song attributes and make the scoring logic use them."
+- "Create multiple scoring modes that can be selected from the CLI."
+- "Add a diversity penalty for repeated artists or genres."
+- "Display scores and reasons in a readable terminal table."
 
 **What did the agent generate or change?**
 
-<!-- List the files edited, code generated, or commands run -->
+The agent expanded `songs.csv`, added three scoring modes, implemented greedy
+diversity reranking, built an ASCII table, completed the model card, and added
+tests. It also ran the CLI in each mode and validated all CSV value ranges.
 
 **What did you verify or fix manually?**
 
-<!-- Describe anything the agent got wrong or that required human review -->
+I verified that all 18 songs load, numerical columns have correct types, scores
+remain deterministic, and all tests pass. I checked that diversity changes the
+lofi ordering without removing relevant songs. I also reviewed the model card
+to ensure its claims match observed output.
 
 ---
 
 ## Design Pattern (SF10)
 
-> Document how AI helped you choose or implement a design pattern.
-
 **Which design pattern did you use?**
 
-<!-- e.g., Strategy, Factory, Observer, etc. -->
+A simple **Strategy pattern**.
 
 **How did AI help you brainstorm or implement it?**
 
-<!-- Describe the conversation or suggestions that led to your decision -->
+AI suggested keeping named weight dictionaries instead of copying the scoring
+function three times. This makes each mode a replaceable scoring strategy.
 
 **How does the pattern appear in your final code?**
 
-<!-- Point to the relevant class or method -->
+`SCORING_MODES` in `src/recommender.py` stores the balanced, genre-first, and
+energy-focused strategies. `get_scoring_weights()` selects one, and
+`recommend_songs()` applies it. `python -m src.main --mode ...` lets the user
+switch modes.
